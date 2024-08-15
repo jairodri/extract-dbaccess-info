@@ -31,7 +31,7 @@ def get_db_info(db_path:str):
     # Iterate through the tables and retrieve their columns
     for table_name in metadata.tables:
         table = metadata.tables[table_name]
-
+        
         # List to store the columns of the table
         columns_data = []
 
@@ -39,15 +39,19 @@ def get_db_info(db_path:str):
             # Get the characteristics of the column
             column_info = {
                 "Column Name": column.name,
-                "Data Type": str(column.type),
+                "Data Type": column.type,
                 "Nullable": column.nullable,
                 "Primary Key": column.primary_key,
                 "Default": column.default,
-                "Unique": column.unique
+                "Unique": column.unique,
+                "Index": column.index,
+                "Comment": column.comment
             }
             # Add additional information if applicable
             if hasattr(column.type, 'length'):
                 column_info["Length"] = column.type.length
+            else:
+                column_info["Length"] = None
 
             # Add the column information to the list
             columns_data.append(column_info)
