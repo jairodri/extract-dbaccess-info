@@ -1,3 +1,4 @@
 SQLAlchemy>=2.0
 sqlalchemy-access
 pandas>=2.2.2
+python-dotenv
