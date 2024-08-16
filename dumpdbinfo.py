@@ -1,9 +1,10 @@
 import os
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Font, PatternFill, colors
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.worksheet.hyperlink import Hyperlink
 
 
 def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, sep: str=','):
@@ -50,8 +51,67 @@ def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, s
         dataframe.to_csv(file_path, sep=sep, index=False)
 
 
+def create_hyperlink(ws, at_cell, sheet_name, cell_ref='A1', display_name=None):
+    """
+    Creates a hyperlink in a specified cell that links to another cell within the same workbook.
+
+    This function adds a hyperlink to a specified cell in an Excel worksheet (`ws`). The hyperlink points 
+    to a cell within another sheet (or the same sheet) within the same workbook. The cell containing the 
+    hyperlink is formatted with a blue, underlined font to resemble a standard hyperlink.
+
+    Parameters:
+    -----------
+    ws : openpyxl.worksheet.worksheet.Worksheet
+        The worksheet where the hyperlink will be created.
+    
+    at_cell : str
+        The cell reference (e.g., 'B2') where the hyperlink will be placed in the `ws` worksheet.
+    
+    sheet_name : str
+        The name of the sheet to which the hyperlink will point.
+    
+    cell_ref : str, optional
+        The cell reference within the `sheet_name` sheet that the hyperlink will point to. Default is 'A1'.
+    
+    display_name : str, optional
+        The text to be displayed in the cell containing the hyperlink. If not provided, defaults to the `sheet_name`.
+
+    Returns:
+    --------
+    None
+    """
+    if display_name is None:
+        display_name = sheet_name
+    to_location = "'{0}'!{1}".format(sheet_name, cell_ref)
+    ws[at_cell].hyperlink = Hyperlink(display=display_name, ref=at_cell, location=to_location)
+    ws[at_cell].value = display_name
+    ws[at_cell].font = Font(u='single', color=colors.BLUE)
+
 
 def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str):
+    """
+    Exports metadata from a database to an Excel workbook with a separate sheet for each table's metadata.
+
+    This function generates an Excel workbook where each table's metadata is stored in a separate sheet. 
+    The first sheet, titled "Tables," serves as an index listing all table names, with hyperlinks to 
+    their respective sheets for easy navigation.
+
+    Parameters:
+    -----------
+    db_name : str
+        The name of the database, which will be used to name the output Excel file.
+    
+    table_dataframes : dict of pandas.DataFrame
+        A dictionary where each key is a table name and each value is a DataFrame containing the table's column metadata.
+    
+    output_dir : str
+        The directory where the Excel file will be saved. The function will ensure the directory structure 
+        includes a folder named after the database.
+
+    Returns:
+    --------
+    None
+    """
 
     # Ensure the output directory includes the database name
     if not output_dir.endswith(db_name):
@@ -63,11 +123,27 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
     # Create the Excel workbook
     workbook = Workbook()
 
-    # Remove the default sheet created by openpyxl
-    workbook.remove(workbook.active)
-    
     # Default Excel font size if not specified
     standard_font_size = 11  # Default Excel font size if not specified
+
+    # Use the default sheet as the index sheet
+    index_sheet = workbook.active
+    index_sheet.title = "Tables"
+    
+    # Add header to the index sheet
+    index_sheet.cell(row=1, column=1, value="Table").font = Font(color="FFFFFF", bold=True, size=standard_font_size+1)
+    index_sheet.cell(row=1, column=1).fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
+
+    # Populate the index sheet with table names
+    for i, table_name in enumerate(table_dataframes.keys(), start=2):
+        index_sheet.cell(row=i, column=1, value=table_name)
+    
+    # Adjust column width for the index sheet
+    max_length = max(len(table_name) for table_name in table_dataframes.keys()) + 2
+    index_sheet.column_dimensions['A'].width = max_length
+
+    # Apply a filter to all columns
+    index_sheet.auto_filter.ref = index_sheet.dimensions
 
     for table_name, dataframe in table_dataframes.items():
         # Create a new sheet with the table name
@@ -80,8 +156,8 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
                 cell_value = str(value) if not isinstance(value, (int, float, type(None))) else value
                 cell = sheet.cell(row=r_idx, column=c_idx, value=cell_value)
                 if r_idx == 1:  # Apply formatting to header row
-                    cell.font = Font(bold=True, size=standard_font_size+1)
-                    cell.fill = PatternFill(end_color='00D9D9D9', start_color='00D9D9D9', fill_type='solid')
+                    cell.font = Font(color="FFFFFF", bold=True, size=standard_font_size+1)
+                    cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
         
         # Auto-size columns based on the maximum width of the data and the header
         for col in sheet.columns:
@@ -112,6 +188,9 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
         # Apply a filter to all columns
         sheet.auto_filter.ref = sheet.dimensions
 
+    # Links are created for each table in the list for easy access to its sheet.
+    for i in range(2, index_sheet.max_row + 1):
+        create_hyperlink(index_sheet, 'A' + str(i), index_sheet['A' + str(i)].value, cell_ref='A1')
 
     # Save the workbook to the output directory with the name of the database
     excel_file_path = os.path.join(output_dir, f"{db_name}.xlsx")

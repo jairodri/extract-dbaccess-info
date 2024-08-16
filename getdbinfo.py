@@ -38,6 +38,7 @@ def get_db_info_metadata(db_path:str):
 
     #
     # Create the SQLAlchemy engine with an ODBC connection string
+    # Ordinary unprotected Access database
     #  
     driver = "{Microsoft Access Driver (*.mdb, *.accdb)}"
     connection_string = (
