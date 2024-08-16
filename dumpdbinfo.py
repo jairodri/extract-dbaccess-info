@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 
-def dump_db_info_to_csv(table_dataframes: dict, output_dir: str):
+def dump_db_info_to_csv(table_dataframes: dict, output_dir: str, sep: str=','):
     """
     Saves each DataFrame in the provided dictionary to a CSV file.
     
@@ -17,6 +17,9 @@ def dump_db_info_to_csv(table_dataframes: dict, output_dir: str):
     output_dir : str
         The directory where the CSV files will be saved.
     
+    sep : str, optional
+        Field delimiter for the output file. The default is a comma
+
     Returns:
     --------
     None
@@ -30,6 +33,5 @@ def dump_db_info_to_csv(table_dataframes: dict, output_dir: str):
         file_path = os.path.join(output_dir, f"{table_name}.csv")
         
         # Save the DataFrame to a CSV file
-        dataframe.to_csv(file_path, index=False)
-        
-        print(f"Saved {table_name} to {file_path}")
+        dataframe.to_csv(file_path, sep=sep, index=False)
+

@@ -16,5 +16,5 @@ output_dir = os.getenv('OUTPUT_DIR')
 
 if __name__ == '__main__':
     table_df = get_db_info_metadata(access_db)
-    dump_db_info_to_csv(table_df, output_dir)
+    dump_db_info_to_csv(table_df, output_dir, sep='|')
     
