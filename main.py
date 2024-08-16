@@ -12,11 +12,13 @@ load_dotenv()
 access_db = os.getenv('ACCESS_DB_PATH')
 
 # Get the directory where the CSV files will be saved
-output_dir = os.getenv('OUTPUT_DIR')
+output_dir_metadata = os.getenv('OUTPUT_DIR_METADATA')
+output_dir_data = os.getenv('OUTPUT_DIR_DATA')
 
 if __name__ == '__main__':
     db_name, table_df_metadata = get_db_info_metadata(access_db)
-    dump_db_info_to_csv(db_name, table_df_metadata, output_dir, sep='|')
-    dump_db_info_to_excel(db_name, table_df_metadata, output_dir)
-    table_df_data = get_db_info_data(access_db)
-    print(table_df_data)
+    dump_db_info_to_csv(db_name, table_df_metadata, output_dir_metadata, sep='|')
+    dump_db_info_to_excel(db_name, table_df_metadata, output_dir_metadata)
+    db_name, table_df_data = get_db_info_data(access_db)
+    dump_db_info_to_csv(db_name, table_df_data, output_dir_data, sep='|')
+

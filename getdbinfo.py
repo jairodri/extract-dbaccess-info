@@ -147,5 +147,5 @@ def get_db_info_data(db_path:str):
         table_data[table_name] = df
 
     # Return the dictionary of DataFrames
-    return table_data
+    return db_name, table_data
 
