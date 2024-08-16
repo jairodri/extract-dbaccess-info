@@ -1,5 +1,5 @@
 from getdbinfo import get_db_info_metadata
-from dumpdbinfo import dump_db_info_to_csv
+from dumpdbinfo import dump_db_info_to_csv, dump_db_info_to_excel
 
 import os
 from dotenv import load_dotenv
@@ -17,4 +17,4 @@ output_dir = os.getenv('OUTPUT_DIR')
 if __name__ == '__main__':
     db_name, table_df = get_db_info_metadata(access_db)
     dump_db_info_to_csv(db_name, table_df, output_dir, sep='|')
-    
+    dump_db_info_to_excel(db_name, table_df, output_dir)
