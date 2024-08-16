@@ -195,7 +195,7 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
         return_cell = sheet.cell(row=1, column=last_col_idx)
         create_hyperlink(sheet, at_cell=return_cell.coordinate, sheet_name="Tables", cell_ref='A1', display_name="Return to Tables")
 
-        # Ajustar el ancho de la columna para adaptarse al mensaje "Return to Tables"
+        # Adjust the column width to fit the "Return to Tables" message.
         sheet.column_dimensions[return_cell.column_letter].width = len("Return to Tables") + 2
 
 

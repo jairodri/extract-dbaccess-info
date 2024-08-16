@@ -1,4 +1,4 @@
-from getdbinfo import get_db_info_metadata
+from getdbinfo import get_db_info_metadata, get_db_info_data
 from dumpdbinfo import dump_db_info_to_csv, dump_db_info_to_excel
 
 import os
@@ -15,6 +15,8 @@ access_db = os.getenv('ACCESS_DB_PATH')
 output_dir = os.getenv('OUTPUT_DIR')
 
 if __name__ == '__main__':
-    db_name, table_df = get_db_info_metadata(access_db)
-    dump_db_info_to_csv(db_name, table_df, output_dir, sep='|')
-    dump_db_info_to_excel(db_name, table_df, output_dir)
+    db_name, table_df_metadata = get_db_info_metadata(access_db)
+    dump_db_info_to_csv(db_name, table_df_metadata, output_dir, sep='|')
+    dump_db_info_to_excel(db_name, table_df_metadata, output_dir)
+    table_df_data = get_db_info_data(access_db)
+    print(table_df_data)

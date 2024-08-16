@@ -94,3 +94,58 @@ def get_db_info_metadata(db_path:str):
 
     return db_name, table_dataframes   
 
+
+def get_db_info_data(db_path:str):
+    """
+    Connects to a Microsoft Access database and extracts data from each table into a pandas DataFrame.
+    
+    Parameters:
+    -----------
+    db_path : str
+        The file path to the Microsoft Access database.
+    
+    Returns:
+    --------
+    dict of pandas.DataFrame
+        A dictionary where each key is a table name and each value is a DataFrame containing the data from that table.
+    """
+
+    # Extract the database name from the db_path
+    db_name = os.path.splitext(os.path.basename(db_path))[0]
+
+    #
+    # Create the SQLAlchemy engine with an ODBC connection string
+    # Ordinary unprotected Access database
+    #  
+    driver = "{Microsoft Access Driver (*.mdb, *.accdb)}"
+    connection_string = (
+        f"DRIVER={driver};"
+        f"DBQ={db_path};"
+        f"ExtendedAnsiSQL=1;"
+        )
+    connection_url = sa.engine.URL.create(
+        "access+pyodbc",
+        query={"odbc_connect": connection_string}
+        )
+    engine = sa.create_engine(connection_url)
+    #
+
+    # Reflect the database schema (retrieve information about the tables)
+    metadata = sa.MetaData()
+    metadata.reflect(bind=engine)
+
+    # Create a dictionary to store DataFrames
+    table_data = {}
+
+    # Iterate over each table and load its data into a DataFrame
+    for table_name in metadata.tables:
+        # Query all data from the table
+        query = sa.select(metadata.tables[table_name])
+        df = pd.read_sql(query, engine)
+        
+        # Store the DataFrame in the dictionary
+        table_data[table_name] = df
+
+    # Return the dictionary of DataFrames
+    return table_data
+
