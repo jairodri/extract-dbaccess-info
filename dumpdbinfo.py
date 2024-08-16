@@ -96,6 +96,8 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
     The first sheet, titled "Tables," serves as an index listing all table names, with hyperlinks to 
     their respective sheets for easy navigation.
 
+    Each table sheet will include a hyperlink in the header row to return to the index sheet.
+
     Parameters:
     -----------
     db_name : str
@@ -187,6 +189,15 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
 
         # Apply a filter to all columns
         sheet.auto_filter.ref = sheet.dimensions
+
+        # Add a hyperlink to return to the "Tables" sheet in the last cell of the header row
+        last_col_idx = len(dataframe.columns) + 1
+        return_cell = sheet.cell(row=1, column=last_col_idx)
+        create_hyperlink(sheet, at_cell=return_cell.coordinate, sheet_name="Tables", cell_ref='A1', display_name="Return to Tables")
+
+        # Ajustar el ancho de la columna para adaptarse al mensaje "Return to Tables"
+        sheet.column_dimensions[return_cell.column_letter].width = len("Return to Tables") + 2
+
 
     # Links are created for each table in the list for easy access to its sheet.
     for i in range(2, index_sheet.max_row + 1):
