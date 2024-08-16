@@ -3,7 +3,7 @@ import sqlalchemy_access as sa_a
 import pandas as pd
 
 
-def get_db_info(db_path:str):
+def get_db_info_metadata(db_path:str):
 
     """
     Extracts metadata information from a Microsoft Access database and returns it as a dictionary of pandas DataFrames.
