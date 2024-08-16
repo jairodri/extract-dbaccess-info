@@ -10,4 +10,5 @@ load_dotenv()
 access_db = os.getenv('ACCESS_DB_PATH')
 
 if __name__ == '__main__':
-    get_db_info(access_db)
+    table_df = get_db_info(access_db)
+    print(table_df)

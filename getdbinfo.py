@@ -5,8 +5,31 @@ import pandas as pd
 
 def get_db_info(db_path:str):
 
+    """
+    Extracts metadata information from a Microsoft Access database and returns it as a dictionary of pandas DataFrames.
+
+    This function creates an SQLAlchemy engine using an ODBC connection string to connect to a Microsoft Access 
+    database specified by `db_path`. It then reflects the database schema to retrieve metadata about the tables 
+    in the database. For each table, it gathers detailed information about its columns, including name, data type, 
+    nullability, primary key status, default value, uniqueness, index presence, and any comments. 
+
+    Each table's column information is stored in a pandas DataFrame, and the function returns a dictionary where 
+    the keys are table names and the values are the corresponding DataFrames containing the column details.
+
+    Parameters:
+    -----------
+    db_path : str
+        The file path to the Microsoft Access database.
+
+    Returns:
+    --------
+    dict of pandas.DataFrame
+        A dictionary where each key is a table name from the database and each value is a DataFrame with the columns' 
+        metadata for that table.
+    """
+
     #
-    # Create the SQLAlchemy engine
+    # Create the SQLAlchemy engine with an ODBC connection string
     #  
     driver = "{Microsoft Access Driver (*.mdb, *.accdb)}"
     connection_string = (
@@ -26,7 +49,7 @@ def get_db_info(db_path:str):
     metadata.reflect(bind=engine)
 
     # Create a DataFrame for each table
-    dataframes = {}
+    table_dataframes = {}
 
     # Iterate through the tables and retrieve their columns
     for table_name in metadata.tables:
@@ -58,8 +81,7 @@ def get_db_info(db_path:str):
 
         # Create a DataFrame for the table
         df = pd.DataFrame(columns_data)
-        dataframes[table_name] = df
+        table_dataframes[table_name] = df
 
-        # Print the DataFrame for the current table
-        print(f"DataFrame for table '{table_name}':\n", df, "\n")
+    return table_dataframes    
 
