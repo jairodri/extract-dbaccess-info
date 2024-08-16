@@ -1,20 +1,24 @@
 import sqlalchemy as sa
 import sqlalchemy_access as sa_a
 import pandas as pd
+import os
 
 
 def get_db_info_metadata(db_path:str):
 
     """
-    Extracts metadata information from a Microsoft Access database and returns it as a dictionary of pandas DataFrames.
+    Extracts metadata information from a Microsoft Access database and returns it as a tuple containing 
+    the database name and a dictionary of pandas DataFrames.
 
     This function creates an SQLAlchemy engine using an ODBC connection string to connect to a Microsoft Access 
     database specified by `db_path`. It then reflects the database schema to retrieve metadata about the tables 
     in the database. For each table, it gathers detailed information about its columns, including name, data type, 
     nullability, primary key status, default value, uniqueness, index presence, and any comments. 
 
-    Each table's column information is stored in a pandas DataFrame, and the function returns a dictionary where 
-    the keys are table names and the values are the corresponding DataFrames containing the column details.
+    Each table's column information is stored in a pandas DataFrame, and the function returns a tuple where the 
+    first element is the name of the database (derived from `db_path`), and the second element is a dictionary 
+    where the keys are table names and the values are the corresponding DataFrames containing the column details.
+
 
     Parameters:
     -----------
@@ -23,10 +27,14 @@ def get_db_info_metadata(db_path:str):
 
     Returns:
     --------
-    dict of pandas.DataFrame
-        A dictionary where each key is a table name from the database and each value is a DataFrame with the columns' 
+    tuple: (str, dict of pandas.DataFrame)
+        A tuple where the first element is the name of the database and the second element is a dictionary 
+        where each key is a table name from the database and each value is a DataFrame with the columns' 
         metadata for that table.
     """
+
+    # Extract the database name from the db_path
+    db_name = os.path.splitext(os.path.basename(db_path))[0]
 
     #
     # Create the SQLAlchemy engine with an ODBC connection string
@@ -83,5 +91,5 @@ def get_db_info_metadata(db_path:str):
         df = pd.DataFrame(columns_data)
         table_dataframes[table_name] = df
 
-    return table_dataframes    
+    return db_name, table_dataframes   
 
