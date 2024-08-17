@@ -51,7 +51,7 @@ def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, s
         dataframe.to_csv(file_path, sep=sep, index=False)
 
 
-def create_hyperlink(ws, at_cell, sheet_name, cell_ref='A1', display_name=None):
+def create_hyperlink(ws, at_cell, sheet_name, cell_ref='A1', display_name=None, font_size=11):
     """
     Creates a hyperlink in a specified cell that links to another cell within the same workbook.
 
@@ -76,6 +76,9 @@ def create_hyperlink(ws, at_cell, sheet_name, cell_ref='A1', display_name=None):
     display_name : str, optional
         The text to be displayed in the cell containing the hyperlink. If not provided, defaults to the `sheet_name`.
 
+    font_size : int, optional
+        The font size to be applied to the cell containing the hyperlink. Default is 11.
+
     Returns:
     --------
     None
@@ -85,7 +88,7 @@ def create_hyperlink(ws, at_cell, sheet_name, cell_ref='A1', display_name=None):
     to_location = "'{0}'!{1}".format(sheet_name, cell_ref)
     ws[at_cell].hyperlink = Hyperlink(display=display_name, ref=at_cell, location=to_location)
     ws[at_cell].value = display_name
-    ws[at_cell].font = Font(u='single', color=colors.BLUE)
+    ws[at_cell].font = Font(u='single', color=colors.BLUE, size=font_size)
 
 
 def adjust_column_widths(sheet,  max_width=80):
@@ -213,7 +216,7 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
         # Add a hyperlink to return to the "Tables" sheet in the last cell of the header row
         last_col_idx = len(dataframe.columns) + 1
         return_cell = sheet.cell(row=1, column=last_col_idx)
-        create_hyperlink(sheet, at_cell=return_cell.coordinate, sheet_name="Tables", cell_ref='A1', display_name="Return to Tables")
+        create_hyperlink(sheet, at_cell=return_cell.coordinate, sheet_name="Tables", cell_ref='A1', display_name="Return to Tables", font_size=standard_font_size+1)
 
         # Adjust the column width to fit the "Return to Tables" message.
         sheet.column_dimensions[return_cell.column_letter].width = len("Return to Tables") + 2
