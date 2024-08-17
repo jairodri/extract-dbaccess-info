@@ -153,7 +153,7 @@ def format_header_cell(cell, font_size=11):
     cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
 
 
-def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str, include_record_count: bool=False):
+def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str, include_record_count: bool = False, max_records_per_table: int = 50000):
     """
     Exports data in the provided dictionary to an Excel workbook with a separate sheet for each table's data.
 
@@ -179,6 +179,9 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str,
 
     include_record_count : bool, optional
         If True, adds a column to the index sheet showing the number of records in each table. Default is False.
+
+    max_records_per_table : int, optional
+        The maximum number of records to include per table in the Excel sheet. Default is 50,000.
 
     Returns:
     --------
@@ -222,11 +225,14 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str,
     index_sheet.auto_filter.ref = index_sheet.dimensions
 
     for table_name, dataframe in table_dataframes.items():
+        # Limit the number of records to max_records_per_table
+        limited_dataframe = dataframe.head(max_records_per_table)
+
         # Create a new sheet with the table name
         sheet = workbook.create_sheet(title=table_name)
         
         # Add the DataFrame to the sheet
-        for r_idx, row in enumerate(dataframe_to_rows(dataframe, index=False, header=True), 1):
+        for r_idx, row in enumerate(dataframe_to_rows(limited_dataframe, index=False, header=True), 1):
             for c_idx, value in enumerate(row, 1):
                 # Ensure the value is converted to a string if it's not a basic data type
                 cell_value = str(value) if not isinstance(value, (int, float, type(None))) else value
