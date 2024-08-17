@@ -133,13 +133,35 @@ def adjust_column_widths(sheet,  max_width=80):
         sheet.column_dimensions[column].width = adjusted_width
 
 
-def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str):
+def format_header_cell(cell, font_size=11):
+    """
+    Formats a header cell with the default styling: white bold text and green background.
+
+    Parameters:
+    -----------
+    cell : openpyxl.cell.cell.Cell
+        The cell to format.
+    
+    font_size : int, optional
+        The font size to be applied to the header cell. Default is 11.
+
+    Returns:
+    --------
+    None
+    """
+    cell.font = Font(color="FFFFFF", bold=True, size=font_size + 1)
+    cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
+
+
+def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str, include_record_count: bool=False):
     """
     Exports data in the provided dictionary to an Excel workbook with a separate sheet for each table's data.
 
     This function generates an Excel workbook where each table's data is stored in a separate sheet. 
     The first sheet, titled "Tables," serves as an index listing all table names, with hyperlinks to 
     their respective sheets for easy navigation.
+
+    Optionally, a second column can be added to the index sheet, showing the number of records in each table.
 
     Each table sheet will include a hyperlink in the header row to return to the index sheet.
 
@@ -154,6 +176,9 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
     output_dir : str
         The directory where the Excel file will be saved. The function will ensure the directory structure 
         includes a folder named after the database.
+
+    include_record_count : bool, optional
+        If True, adds a column to the index sheet showing the number of records in each table. Default is False.
 
     Returns:
     --------
@@ -177,17 +202,21 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
     index_sheet = workbook.active
     index_sheet.title = "Tables"
     
-    # Add header to the index sheet
-    index_sheet.cell(row=1, column=1, value="Table").font = Font(color="FFFFFF", bold=True, size=standard_font_size+1)
-    index_sheet.cell(row=1, column=1).fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
+    # Add headers to the index sheet
+    index_sheet.cell(row=1, column=1, value="Table")
+    format_header_cell(index_sheet.cell(row=1, column=1), font_size=standard_font_size)
+    if include_record_count:
+        index_sheet.cell(row=1, column=2, value="Record Count")
+        format_header_cell(index_sheet.cell(row=1, column=2), font_size=standard_font_size)
 
-    # Populate the index sheet with table names
-    for i, table_name in enumerate(table_dataframes.keys(), start=2):
+    # Populate the index sheet with table names (and record counts if enabled)
+    for i, (table_name, dataframe) in enumerate(table_dataframes.items(), start=2):
         index_sheet.cell(row=i, column=1, value=table_name)
+        if include_record_count:
+            index_sheet.cell(row=i, column=2, value=len(dataframe))
     
     # Adjust column width for the index sheet
-    max_length = max(len(table_name) for table_name in table_dataframes.keys()) + 2
-    index_sheet.column_dimensions['A'].width = max_length
+    adjust_column_widths(index_sheet)
 
     # Apply a filter to all columns
     index_sheet.auto_filter.ref = index_sheet.dimensions
@@ -204,8 +233,7 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
                 cell = sheet.cell(row=r_idx, column=c_idx, value=cell_value)
                 # Apply formatting to header row
                 if r_idx == 1:  
-                    cell.font = Font(color="FFFFFF", bold=True, size=standard_font_size+1)
-                    cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
+                    format_header_cell(cell, font_size=standard_font_size)
         
         # Auto-size columns 
         adjust_column_widths(sheet)
