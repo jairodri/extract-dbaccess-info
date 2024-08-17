@@ -11,7 +11,7 @@ load_dotenv()
 # Get the database path from the environment variable
 access_db = os.getenv('ACCESS_DB_PATH')
 
-# Get the directory where the CSV files will be saved
+# Get the directory where the output files will be saved
 output_dir_metadata = os.getenv('OUTPUT_DIR_METADATA')
 output_dir_data = os.getenv('OUTPUT_DIR_DATA')
 

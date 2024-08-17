@@ -21,7 +21,7 @@ def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, s
         The name of the database, which will be used to create a subdirectory within the output directory.
 
     table_dataframes : dict of pandas.DataFrame
-        A dictionary where each key is a table name and each value is a DataFrame containing the table's column metadata.
+        A dictionary where each key is a table name and each value is a DataFrame containing the table's column data.
     
     output_dir : str
         The directory where the CSV files will be saved. If the directory does not contain a subdirectory with the 
@@ -88,11 +88,53 @@ def create_hyperlink(ws, at_cell, sheet_name, cell_ref='A1', display_name=None):
     ws[at_cell].font = Font(u='single', color=colors.BLUE)
 
 
+def adjust_column_widths(sheet,  max_width=80):
+    """
+    Adjusts the width of each column in the Excel sheet based on the maximum width of the data and header values.
+
+    Parameters:
+    -----------
+    sheet : openpyxl.worksheet.worksheet.Worksheet
+        The worksheet where column widths need to be adjusted.
+
+    max_width : int, optional (default=80)
+        The maximum allowed width for any column. If the calculated width exceeds this value,
+        the column width will be set to this maximum value.
+    
+    Returns:
+    --------
+    None
+    """
+    for col in sheet.columns:
+        max_length = 0
+        column = col[0].column_letter  # Get the column name
+
+        # Calculate the width required by the header (considering formatting)
+        header_length = len(str(col[0].value))
+        adjusted_header_length = header_length * 1.5  # Factor to account for bold and larger font size
+
+        # Compare the header length with the lengths of the data values
+        for cell in col:
+            try:
+                cell_length = len(str(cell.value))
+                if cell_length > max_length:
+                    max_length = cell_length
+            except:
+                pass
+        
+        # Use the greater of the header length or data length for column width
+        max_length = max(max_length, adjusted_header_length)
+
+        # Adjust the column width and apply the max_width limit
+        adjusted_width = min(max_length + 2, max_width)
+        sheet.column_dimensions[column].width = adjusted_width
+
+
 def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str):
     """
-    Exports metadata from a database to an Excel workbook with a separate sheet for each table's metadata.
+    Exports data in the provided dictionary to an Excel workbook with a separate sheet for each table's data.
 
-    This function generates an Excel workbook where each table's metadata is stored in a separate sheet. 
+    This function generates an Excel workbook where each table's data is stored in a separate sheet. 
     The first sheet, titled "Tables," serves as an index listing all table names, with hyperlinks to 
     their respective sheets for easy navigation.
 
@@ -104,7 +146,7 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
         The name of the database, which will be used to name the output Excel file.
     
     table_dataframes : dict of pandas.DataFrame
-        A dictionary where each key is a table name and each value is a DataFrame containing the table's column metadata.
+        A dictionary where each key is a table name and each value is a DataFrame containing the table's column data.
     
     output_dir : str
         The directory where the Excel file will be saved. The function will ensure the directory structure 
@@ -126,7 +168,7 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
     workbook = Workbook()
 
     # Default Excel font size if not specified
-    standard_font_size = 11  # Default Excel font size if not specified
+    standard_font_size = 11  
 
     # Use the default sheet as the index sheet
     index_sheet = workbook.active
@@ -157,35 +199,13 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str)
                 # Ensure the value is converted to a string if it's not a basic data type
                 cell_value = str(value) if not isinstance(value, (int, float, type(None))) else value
                 cell = sheet.cell(row=r_idx, column=c_idx, value=cell_value)
-                if r_idx == 1:  # Apply formatting to header row
+                # Apply formatting to header row
+                if r_idx == 1:  
                     cell.font = Font(color="FFFFFF", bold=True, size=standard_font_size+1)
                     cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
         
-        # Auto-size columns based on the maximum width of the data and the header
-        for col in sheet.columns:
-            max_length = 0
-            column = col[0].column_letter  # Get the column name
-
-            # Calculate the width required by the header (considering formatting)
-            header_length = len(str(col[0].value))
-            adjusted_header_length = header_length * 1.5  # Factor to account for bold and larger font size
-
-            # Compare the header length with the lengths of the data values
-            for cell in col:
-                try:
-                    cell_length = len(str(cell.value))
-                    if cell_length > max_length:
-                        max_length = cell_length
-                except:
-                    pass
-            
-            # Use the greater of the header length or data length for column width
-            max_length = max(max_length, adjusted_header_length)
-
-            # Adjust the column width
-            adjusted_width = (max_length + 2)
-            sheet.column_dimensions[column].width = adjusted_width
-
+        # Auto-size columns 
+        adjust_column_widths(sheet)
 
         # Apply a filter to all columns
         sheet.auto_filter.ref = sheet.dimensions
