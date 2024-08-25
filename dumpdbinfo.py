@@ -232,6 +232,9 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str,
         # Create a new sheet with the table name
         sheet = workbook.create_sheet(title=table_name)
         
+        # Fijar la primera fila (cabecera)
+        sheet.freeze_panes = 'A2'  # Esto congela la primera fila
+        
         # Add the DataFrame to the sheet
         for r_idx, row in enumerate(dataframe_to_rows(limited_dataframe, index=False, header=True), 1):
             for c_idx, value in enumerate(row, 1):
