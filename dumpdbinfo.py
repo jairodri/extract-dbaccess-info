@@ -5,7 +5,7 @@ from openpyxl.styles import Font, PatternFill, colors
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.hyperlink import Hyperlink
-from datetime import datetime
+from datetime import datetime, date
 
 
 def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, sep: str=','):
@@ -237,8 +237,8 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str,
             for c_idx, value in enumerate(row, 1):
                 # Convert datetime64 and date values to Excel date format
                 if isinstance(value, pd.Timestamp):
-                    cell_value = value.date()
-                elif isinstance(value, datetime):
+                    cell_value = value.to_pydatetime()
+                elif isinstance(value, date):
                     cell_value = value.date()  
                 else:
                     # Ensure the value is converted to a string if it's not a basic data type
