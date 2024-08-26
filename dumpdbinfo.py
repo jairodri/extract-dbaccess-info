@@ -8,7 +8,7 @@ from openpyxl.worksheet.hyperlink import Hyperlink
 from datetime import datetime, date
 
 
-def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, sep: str=','):
+def dump_db_info_to_csv(db_info_dict: dict, output_dir: str, sep: str=','):
     """
     Saves each DataFrame in the provided dictionary to a CSV file, organizing the files within a directory 
     named after the database.
@@ -18,11 +18,9 @@ def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, s
 
     Parameters:
     -----------
-    db_name : str
-        The name of the database, which will be used to create a subdirectory within the output directory.
-
-    table_dataframes : dict of pandas.DataFrame
-        A dictionary where each key is a table name and each value is a DataFrame containing the table's column data.
+    db_info_dict : dict
+        A dictionary where the key is the name of the database and the value is another dictionary where each key is 
+        a table name and each value is a DataFrame containing the table's column data.
     
     output_dir : str
         The directory where the CSV files will be saved. If the directory does not contain a subdirectory with the 
@@ -35,6 +33,10 @@ def dump_db_info_to_csv(db_name: str, table_dataframes: dict, output_dir: str, s
     --------
     None
     """
+    # Extract the database name and table dataframes from the input dictionary
+    db_name = list(db_info_dict.keys())[0]
+    table_dataframes = db_info_dict[db_name]
+
     # Ensure the output directory includes the database name
     if not output_dir.endswith(db_name):
         output_dir = os.path.join(output_dir, db_name)
@@ -154,7 +156,7 @@ def format_header_cell(cell, font_size=11):
     cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
 
 
-def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str, include_record_count: bool = False, max_records_per_table: int = 50000):
+def dump_db_info_to_excel(db_info_dict: dict, output_dir: str, include_record_count: bool = False, max_records_per_table: int = 50000):
     """
     Exports data in the provided dictionary to an Excel workbook with a separate sheet for each table's data.
 
@@ -168,11 +170,9 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str,
 
     Parameters:
     -----------
-    db_name : str
-        The name of the database, which will be used to name the output Excel file.
-    
-    table_dataframes : dict of pandas.DataFrame
-        A dictionary where each key is a table name and each value is a DataFrame containing the table's column data.
+    db_info_dict : dict
+        A dictionary where the key is the name of the database and the value is another dictionary where each key is 
+        a table name and each value is a DataFrame containing the table's column data.
     
     output_dir : str
         The directory where the Excel file will be saved. The function will ensure the directory structure 
@@ -188,6 +188,10 @@ def dump_db_info_to_excel(db_name: str, table_dataframes: dict, output_dir: str,
     --------
     None
     """
+
+    # Extract the database name and table dataframes from the input dictionary
+    db_name = list(db_info_dict.keys())[0]
+    table_dataframes = db_info_dict[db_name]
 
     # Ensure the output directory includes the database name
     if not output_dir.endswith(db_name):
